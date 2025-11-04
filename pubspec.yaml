@@ -1,0 +1,37 @@
+name: booky
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Database
+  isar_community: ^3.3.0-dev.3
+  isar_community_flutter_libs: ^3.3.0-dev.3
+  # State management
+  flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
+  # Image handling
+  image_picker: ^1.0.4
+  # UI utilities
+  flutter_form_builder: ^10.2.0
+  form_builder_validators: ^11.2.0
+  # Path utilities
+  path_provider: ^2.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # Build tools
+  build_runner: ^2.4.6
+  # Code generators
+  isar_community_generator: ^3.3.0-dev.3
+  riverpod_generator: ^3.0.3
+
+flutter:
+  uses-material-design: true
