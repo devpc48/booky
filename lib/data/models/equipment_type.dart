@@ -10,7 +10,13 @@ class EquipmentType {
   @Index(type: IndexType.value)
   late String type;
 
+  late List<String> characteristics;
+
   final equipment = IsarLinks<Equipment>();
+
+  EquipmentType() {
+    characteristics = [];
+  }
 
   @override
   String toString() => type;

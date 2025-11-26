@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/user.dart';
 import '../../data/models/local.dart';
 import '../../data/models/equipment_type.dart';
+import '../../data/models/characteristic.dart';
 import '../../providers/providers.dart';
 
 class EquipmentFormDialog extends ConsumerStatefulWidget {
@@ -17,6 +18,7 @@ class EquipmentFormDialog extends ConsumerStatefulWidget {
   final User? initialUser;
   final Local? initialLocal;
   final EquipmentType? initialTipoEquipo;
+  final List<Characteristic>? initialCharacteristics;
   final Function(
     String nombreEquipo,
     String? descripcion,
@@ -27,6 +29,7 @@ class EquipmentFormDialog extends ConsumerStatefulWidget {
     User? user,
     Local? local,
     EquipmentType? tipoEquipo,
+    List<Characteristic> characteristics,
   ) onSubmit;
 
   const EquipmentFormDialog({
@@ -43,6 +46,7 @@ class EquipmentFormDialog extends ConsumerStatefulWidget {
     this.initialUser,
     this.initialLocal,
     this.initialTipoEquipo,
+    this.initialCharacteristics,
   });
 
   @override
@@ -59,6 +63,7 @@ class _EquipmentFormDialogState extends ConsumerState<EquipmentFormDialog> {
   User? _selectedUser;
   Local? _selectedLocal;
   EquipmentType? _selectedTipoEquipo;
+  late Map<String, String> _characteristicValues;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -73,6 +78,34 @@ class _EquipmentFormDialogState extends ConsumerState<EquipmentFormDialog> {
     _selectedUser = widget.initialUser;
     _selectedLocal = widget.initialLocal;
     _selectedTipoEquipo = widget.initialTipoEquipo;
+    _characteristicValues = {};
+    _initializeCharacteristics();
+  }
+
+  void _initializeCharacteristics() {
+    if (_selectedTipoEquipo != null) {
+      // Create a map from initialCharacteristics for quick lookup
+      final initialMap = <String, String>{};
+      if (widget.initialCharacteristics != null) {
+        for (final char in widget.initialCharacteristics!) {
+          initialMap[char.name] = char.value;
+        }
+      }
+      
+      // Initialize values from equipment type characteristics
+      for (final characteristic in _selectedTipoEquipo!.characteristics) {
+        _characteristicValues[characteristic] = initialMap[characteristic] ?? '';
+      }
+    }
+  }
+
+  void _updateCharacteristics(EquipmentType? newType) {
+    _characteristicValues.clear();
+    if (newType != null) {
+      for (final characteristic in newType.characteristics) {
+        _characteristicValues[characteristic] = '';
+      }
+    }
   }
 
   @override
@@ -94,12 +127,17 @@ class _EquipmentFormDialogState extends ConsumerState<EquipmentFormDialog> {
 
     return AlertDialog(
       title: Text(widget.title),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+          maxWidth: double.infinity,
+        ),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               TextFormField(
                 controller: _nombreEquipoController,
                 decoration: const InputDecoration(
@@ -214,14 +252,44 @@ class _EquipmentFormDialogState extends ConsumerState<EquipmentFormDialog> {
                   onChanged: (value) {
                     setState(() {
                       _selectedTipoEquipo = value;
+                      _updateCharacteristics(value);
                     });
                   },
                 ),
                 loading: () => const CircularProgressIndicator(),
                 error: (error, stack) => Text('Error: $error'),
               ),
+              const SizedBox(height: 16),
+              if (_selectedTipoEquipo != null && _selectedTipoEquipo!.characteristics.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Características',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    ..._selectedTipoEquipo!.characteristics.map((characteristic) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: TextFormField(
+                          initialValue: _characteristicValues[characteristic] ?? '',
+                          onChanged: (value) {
+                            _characteristicValues[characteristic] = value;
+                          },
+                          decoration: InputDecoration(
+                            labelText: characteristic,
+                            hintText: 'Ingrese el valor para $characteristic',
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
             ],
           ),
+        ),
         ),
       ),
       actions: [
@@ -232,6 +300,16 @@ class _EquipmentFormDialogState extends ConsumerState<EquipmentFormDialog> {
         TextButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
+              // Convert characteristic values to list of Characteristic objects
+              final characteristicsList = _characteristicValues.entries
+                  .map((entry) {
+                    final char = Characteristic();
+                    char.name = entry.key;
+                    char.value = entry.value;
+                    return char;
+                  })
+                  .toList();
+              
               widget.onSubmit(
                 _nombreEquipoController.text,
                 _descripcionController.text,
@@ -242,6 +320,7 @@ class _EquipmentFormDialogState extends ConsumerState<EquipmentFormDialog> {
                 _selectedUser,
                 _selectedLocal,
                 _selectedTipoEquipo,
+                characteristicsList,
               );
               Navigator.pop(context);
             }

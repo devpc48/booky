@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:booky/data/models/user.dart';
 import 'package:booky/data/models/local.dart';
 import 'package:booky/data/models/equipment_type.dart';
+import 'package:booky/data/models/characteristic.dart';
 
 part 'equipment.g.dart';
 
@@ -21,6 +22,8 @@ class Equipment {
   String? logo;
   String? modelo;
   String? numero_serie;
+
+  List<Characteristic> characteristics = [];
 
   // Relationships
   final user = IsarLink<User>();

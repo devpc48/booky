@@ -17,7 +17,12 @@ const EquipmentTypeSchema = CollectionSchema(
   name: r'EquipmentType',
   id: -7382036603983751941,
   properties: {
-    r'type': PropertySchema(id: 0, name: r'type', type: IsarType.string),
+    r'characteristics': PropertySchema(
+      id: 0,
+      name: r'characteristics',
+      type: IsarType.stringList,
+    ),
+    r'type': PropertySchema(id: 1, name: r'type', type: IsarType.string),
   },
 
   estimateSize: _equipmentTypeEstimateSize,
@@ -62,6 +67,13 @@ int _equipmentTypeEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.characteristics.length * 3;
+  {
+    for (var i = 0; i < object.characteristics.length; i++) {
+      final value = object.characteristics[i];
+      bytesCount += value.length * 3;
+    }
+  }
   bytesCount += 3 + object.type.length * 3;
   return bytesCount;
 }
@@ -72,7 +84,8 @@ void _equipmentTypeSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.type);
+  writer.writeStringList(offsets[0], object.characteristics);
+  writer.writeString(offsets[1], object.type);
 }
 
 EquipmentType _equipmentTypeDeserialize(
@@ -82,8 +95,9 @@ EquipmentType _equipmentTypeDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = EquipmentType();
+  object.characteristics = reader.readStringList(offsets[0]) ?? [];
   object.id = id;
-  object.type = reader.readString(offsets[0]);
+  object.type = reader.readString(offsets[1]);
   return object;
 }
 
@@ -95,6 +109,8 @@ P _equipmentTypeDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
+      return (reader.readStringList(offset) ?? []) as P;
+    case 1:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -367,6 +383,206 @@ extension EquipmentTypeQueryWhere
 
 extension EquipmentTypeQueryFilter
     on QueryBuilder<EquipmentType, EquipmentType, QFilterCondition> {
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'characteristics',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'characteristics',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'characteristics',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'characteristics',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'characteristics',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'characteristics',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'characteristics',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'characteristics',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'characteristics', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'characteristics', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'characteristics',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition>
+  characteristicsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'characteristics',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<EquipmentType, EquipmentType, QAfterFilterCondition> idEqualTo(
     Id value,
   ) {
@@ -680,6 +896,13 @@ extension EquipmentTypeQuerySortThenBy
 
 extension EquipmentTypeQueryWhereDistinct
     on QueryBuilder<EquipmentType, EquipmentType, QDistinct> {
+  QueryBuilder<EquipmentType, EquipmentType, QDistinct>
+  distinctByCharacteristics() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'characteristics');
+    });
+  }
+
   QueryBuilder<EquipmentType, EquipmentType, QDistinct> distinctByType({
     bool caseSensitive = true,
   }) {
@@ -694,6 +917,13 @@ extension EquipmentTypeQueryProperty
   QueryBuilder<EquipmentType, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<EquipmentType, List<String>, QQueryOperations>
+  characteristicsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'characteristics');
     });
   }
 

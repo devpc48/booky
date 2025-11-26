@@ -22,25 +22,32 @@ const EquipmentSchema = CollectionSchema(
       name: r'categoria',
       type: IsarType.string,
     ),
-    r'descripcion': PropertySchema(
+    r'characteristics': PropertySchema(
       id: 1,
+      name: r'characteristics',
+      type: IsarType.objectList,
+
+      target: r'Characteristic',
+    ),
+    r'descripcion': PropertySchema(
+      id: 2,
       name: r'descripcion',
       type: IsarType.string,
     ),
     r'fecha_creacion': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'fecha_creacion',
       type: IsarType.dateTime,
     ),
-    r'logo': PropertySchema(id: 3, name: r'logo', type: IsarType.string),
-    r'modelo': PropertySchema(id: 4, name: r'modelo', type: IsarType.string),
+    r'logo': PropertySchema(id: 4, name: r'logo', type: IsarType.string),
+    r'modelo': PropertySchema(id: 5, name: r'modelo', type: IsarType.string),
     r'nombre_equipo': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'nombre_equipo',
       type: IsarType.string,
     ),
     r'numero_serie': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'numero_serie',
       type: IsarType.string,
     ),
@@ -99,7 +106,7 @@ const EquipmentSchema = CollectionSchema(
       single: true,
     ),
   },
-  embeddedSchemas: {},
+  embeddedSchemas: {r'Characteristic': CharacteristicSchema},
 
   getId: _equipmentGetId,
   getLinks: _equipmentGetLinks,
@@ -117,6 +124,18 @@ int _equipmentEstimateSize(
     final value = object.categoria;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.characteristics.length * 3;
+  {
+    final offsets = allOffsets[Characteristic]!;
+    for (var i = 0; i < object.characteristics.length; i++) {
+      final value = object.characteristics[i];
+      bytesCount += CharacteristicSchema.estimateSize(
+        value,
+        offsets,
+        allOffsets,
+      );
     }
   }
   {
@@ -154,12 +173,18 @@ void _equipmentSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.categoria);
-  writer.writeString(offsets[1], object.descripcion);
-  writer.writeDateTime(offsets[2], object.fecha_creacion);
-  writer.writeString(offsets[3], object.logo);
-  writer.writeString(offsets[4], object.modelo);
-  writer.writeString(offsets[5], object.nombre_equipo);
-  writer.writeString(offsets[6], object.numero_serie);
+  writer.writeObjectList<Characteristic>(
+    offsets[1],
+    allOffsets,
+    CharacteristicSchema.serialize,
+    object.characteristics,
+  );
+  writer.writeString(offsets[2], object.descripcion);
+  writer.writeDateTime(offsets[3], object.fecha_creacion);
+  writer.writeString(offsets[4], object.logo);
+  writer.writeString(offsets[5], object.modelo);
+  writer.writeString(offsets[6], object.nombre_equipo);
+  writer.writeString(offsets[7], object.numero_serie);
 }
 
 Equipment _equipmentDeserialize(
@@ -170,13 +195,21 @@ Equipment _equipmentDeserialize(
 ) {
   final object = Equipment();
   object.categoria = reader.readStringOrNull(offsets[0]);
-  object.descripcion = reader.readStringOrNull(offsets[1]);
-  object.fecha_creacion = reader.readDateTime(offsets[2]);
+  object.characteristics =
+      reader.readObjectList<Characteristic>(
+        offsets[1],
+        CharacteristicSchema.deserialize,
+        allOffsets,
+        Characteristic(),
+      ) ??
+      [];
+  object.descripcion = reader.readStringOrNull(offsets[2]);
+  object.fecha_creacion = reader.readDateTime(offsets[3]);
   object.id = id;
-  object.logo = reader.readStringOrNull(offsets[3]);
-  object.modelo = reader.readStringOrNull(offsets[4]);
-  object.nombre_equipo = reader.readString(offsets[5]);
-  object.numero_serie = reader.readStringOrNull(offsets[6]);
+  object.logo = reader.readStringOrNull(offsets[4]);
+  object.modelo = reader.readStringOrNull(offsets[5]);
+  object.nombre_equipo = reader.readString(offsets[6]);
+  object.numero_serie = reader.readStringOrNull(offsets[7]);
   return object;
 }
 
@@ -190,16 +223,25 @@ P _equipmentDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readObjectList<Characteristic>(
+                offset,
+                CharacteristicSchema.deserialize,
+                allOffsets,
+                Characteristic(),
+              ) ??
+              [])
+          as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
       return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readDateTime(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
+      return (reader.readString(offset)) as P;
+    case 7:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -753,6 +795,65 @@ extension EquipmentQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'categoria', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Equipment, Equipment, QAfterFilterCondition>
+  characteristicsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<Equipment, Equipment, QAfterFilterCondition>
+  characteristicsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Equipment, Equipment, QAfterFilterCondition>
+  characteristicsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<Equipment, Equipment, QAfterFilterCondition>
+  characteristicsLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'characteristics', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<Equipment, Equipment, QAfterFilterCondition>
+  characteristicsLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'characteristics',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Equipment, Equipment, QAfterFilterCondition>
+  characteristicsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'characteristics',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
       );
     });
   }
@@ -1665,7 +1766,14 @@ extension EquipmentQueryFilter
 }
 
 extension EquipmentQueryObject
-    on QueryBuilder<Equipment, Equipment, QFilterCondition> {}
+    on QueryBuilder<Equipment, Equipment, QFilterCondition> {
+  QueryBuilder<Equipment, Equipment, QAfterFilterCondition>
+  characteristicsElement(FilterQuery<Characteristic> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'characteristics');
+    });
+  }
+}
 
 extension EquipmentQueryLinks
     on QueryBuilder<Equipment, Equipment, QFilterCondition> {
@@ -1969,6 +2077,13 @@ extension EquipmentQueryProperty
   QueryBuilder<Equipment, String?, QQueryOperations> categoriaProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'categoria');
+    });
+  }
+
+  QueryBuilder<Equipment, List<Characteristic>, QQueryOperations>
+  characteristicsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'characteristics');
     });
   }
 

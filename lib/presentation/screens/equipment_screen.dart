@@ -55,7 +55,7 @@ class EquipmentScreen extends ConsumerWidget {
         title: 'Agregar Equipo',
         submitLabel: 'Agregar',
         onSubmit: (nombreEquipo, descripcion, categoria, logo, modelo, numeroSerie,
-            user, local, tipoEquipo) async {
+            user, local, tipoEquipo, characteristics) async {
           final equipment = Equipment()
             ..nombre_equipo = nombreEquipo
             ..descripcion = descripcion
@@ -63,7 +63,8 @@ class EquipmentScreen extends ConsumerWidget {
             ..categoria = categoria
             ..logo = logo
             ..modelo = modelo
-            ..numero_serie = numeroSerie;
+            ..numero_serie = numeroSerie
+            ..characteristics = characteristics;
 
           if (user != null) {
             equipment.user.value = user;
@@ -99,14 +100,16 @@ class EquipmentScreen extends ConsumerWidget {
         initialUser: equipment.user.value,
         initialLocal: equipment.local.value,
         initialTipoEquipo: equipment.tipo_equipo.value,
+        initialCharacteristics: equipment.characteristics,
         onSubmit: (nombreEquipo, descripcion, categoria, logo, modelo, numeroSerie,
-            user, local, tipoEquipo) async {
+            user, local, tipoEquipo, characteristics) async {
           equipment.nombre_equipo = nombreEquipo;
           equipment.descripcion = descripcion;
           equipment.categoria = categoria;
           equipment.logo = logo;
           equipment.modelo = modelo;
           equipment.numero_serie = numeroSerie;
+          equipment.characteristics = characteristics;
           equipment.user.value = user;
           equipment.local.value = local;
           equipment.tipo_equipo.value = tipoEquipo;

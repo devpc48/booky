@@ -18,6 +18,9 @@ class EquipmentTypesScreen extends ConsumerWidget {
         items: types,
         itemBuilder: (type) => ListTile(
           title: Text(type.type),
+          subtitle: type.characteristics.isNotEmpty
+              ? Text('${type.characteristics.length} características')
+              : null,
           onTap: () => _showEditDialog(context, ref, type),
           trailing: IconButton(
             icon: const Icon(Icons.delete),
@@ -45,9 +48,10 @@ class EquipmentTypesScreen extends ConsumerWidget {
       builder: (context) => EquipmentTypeFormDialog(
         title: 'Agregar Tipo de Equipo',
         submitLabel: 'Agregar',
-        onSubmit: (type) async {
+        onSubmit: (type, characteristics) async {
           final equipmentType = EquipmentType()
-            ..type = type;
+            ..type = type
+            ..characteristics = characteristics;
 
           final repository = ref.read(equipmentTypeRepositoryProvider);
           await repository.save(equipmentType);
@@ -63,8 +67,10 @@ class EquipmentTypesScreen extends ConsumerWidget {
         title: 'Editar Tipo de Equipo',
         submitLabel: 'Guardar',
         initialType: equipmentType.type,
-        onSubmit: (type) async {
+        initialCharacteristics: equipmentType.characteristics,
+        onSubmit: (type, characteristics) async {
           equipmentType.type = type;
+          equipmentType.characteristics = characteristics;
 
           final repository = ref.read(equipmentTypeRepositoryProvider);
           await repository.save(equipmentType);
